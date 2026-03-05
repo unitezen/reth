@@ -632,10 +632,10 @@ impl ECIES {
 
     pub fn write_header(&mut self, out: &mut BytesMut, size: usize) {
         let mut buf = [0u8; 8];
-        BigEndian::write_uint(&mut buf, size as u64, 3);
+        BigEndian::write_uint(&mut buf, size as u64, 4);
         let mut header = [0u8; 16];
-        header[..3].copy_from_slice(&buf[..3]);
-        header[3..6].copy_from_slice(&[194, 128, 128]);
+        header[..4].copy_from_slice(&buf[..4]);
+        header[4..7].copy_from_slice(&[194, 128, 128]);
 
         self.egress_aes.as_mut().unwrap().apply_keystream(&mut header);
         self.egress_mac.as_mut().unwrap().update_header(&header);
@@ -671,7 +671,7 @@ impl ECIES {
             return Err(ECIESErrorImpl::InvalidHeader.into())
         }
 
-        let body_size = usize::try_from((&header[..]).read_uint::<BigEndian>(3)?)?;
+        let body_size = usize::try_from((&header[..]).read_uint::<BigEndian>(4)?)?;
 
         self.body_size = Some(body_size);
 
